@@ -5,11 +5,10 @@ from dataclasses import dataclass, field
 
 from typing import Union, TypeVar, Type
 
-from xdsl.ir import Operation, Data
-from xdsl.irdl import irdl_op_definition, irdl_attr_definition, builder, AnyOf
+from xdsl.ir import MLContext, Operation, Data
+from xdsl.irdl import irdl_op_definition, irdl_attr_definition, builder, AnyOf, ParameterDef
 from xdsl.parser import Parser
 from xdsl.printer import Printer
-from xdsl.dialects.std import MLContext
 from xdsl.dialects.builtin import StringAttr, AttributeDef, IntegerAttr, IntegerType
 
 
@@ -78,17 +77,17 @@ class Register:
 
 
 @irdl_attr_definition
-class RegisterAttr(Data):
+class RegisterAttr(Data[Register]):
     name = "riscv.reg"
-    data: Register
 
     @staticmethod
-    def parse(parser: Parser) -> RegisterAttr:
+    def parse_parameter(parser: Parser) -> Register:
         name = parser.parse_while(lambda x: x != ">")
-        return RegisterAttr(Register.from_name(name))
+        return Register.from_name(name)
 
-    def print(self, printer: Printer) -> None:
-        printer.print_string(self.data.get_abi_name())
+    @staticmethod
+    def print_parameter(data: Register, printer: Printer) -> None:
+        printer.print_string(data)
 
     @staticmethod
     @builder
@@ -107,17 +106,17 @@ class RegisterAttr(Data):
 
 
 @irdl_attr_definition
-class LabelAttr(Data):
+class LabelAttr(Data[str]):
     name = "riscv.label"
-    data: str
 
     @staticmethod
-    def parse(parser: Parser) -> LabelAttr:
+    def parse_parameter(parser: Parser) -> str:
         data = parser.parse_while(lambda x: x != ">")
-        return LabelAttr(data)
+        return data
 
-    def print(self, printer: Printer) -> None:
-        printer.print_string(self.data)
+    @staticmethod
+    def print_parameter(data: str, printer: Printer) -> None:
+        printer.print_string(data)
 
     @staticmethod
     @builder
